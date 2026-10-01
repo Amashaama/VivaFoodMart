@@ -320,6 +320,11 @@ public class SellerAddItemFragment extends Fragment {
           valid = false;
       }
 
+      if(Double.parseDouble(basePriceStr) <=0 ){
+          binding.tilBasePrice.setError("Invalid Price.");
+          valid = false;
+      }
+
       if(quantityStr.isEmpty()){
           binding.tilQuantity.setError("Quantity is required");
           valid = false;

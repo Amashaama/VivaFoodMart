@@ -172,9 +172,12 @@ public class MainActivity extends AppCompatActivity
 
 
                       binding.toolBarBtnCart.setVisibility(View.VISIBLE);
+                  if (count > 0) {
                       binding.toolBarTvCartBadge.setVisibility(View.VISIBLE);
                       binding.toolBarTvCartBadge.setText(String.valueOf(count));
-
+                  } else {
+                      binding.toolBarTvCartBadge.setVisibility(View.GONE);
+                  }
               }).addOnFailureListener(e->{
                   binding.toolBarBtnCart.setVisibility(View.GONE);
                   binding.toolBarTvCartBadge.setVisibility(View.GONE);

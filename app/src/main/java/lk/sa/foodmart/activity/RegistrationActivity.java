@@ -122,6 +122,12 @@ public class RegistrationActivity extends AppCompatActivity {
                     return;
                 }
 
+                if(!Patterns.EMAIL_ADDRESS.matcher(email).matches()){
+                    binding.signupEmail.setError("Enter valid Email");
+                    binding.signupEmail.requestFocus();
+                    return;
+                }
+
                 if (phone.isEmpty()) {
                     binding.signupPhone.setError("Phone number is required");
                     binding.signupPhone.requestFocus();

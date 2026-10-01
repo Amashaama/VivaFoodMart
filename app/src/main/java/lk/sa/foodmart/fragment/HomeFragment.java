@@ -58,6 +58,8 @@ public class HomeFragment extends Fragment {
   private double currentUserLng = 0.0;
   private boolean hasCurrentUserLocation = false;
 
+  private static final Double NEARBY_DISTANCE_THRESHOLD =15.0;
+
   BottomNavigationView bottomNavigationView;
   NavigationView sideNavigationView;
 
@@ -151,6 +153,7 @@ public class HomeFragment extends Fragment {
                   .addOnSuccessListener(
                       userSnapshots -> {
                         nearbySellerList.clear();
+                        ArrayList<User> allActiveSellers = new ArrayList<>();
                         for (QueryDocumentSnapshot userDoc : userSnapshots) {
                           User seller = userDoc.toObject(User.class);
 
@@ -170,14 +173,23 @@ public class HomeFragment extends Fragment {
                                     seller.getLatitude(),
                                     seller.getLongitude());
                             seller.setDistanceKm(distanceKm);
+
+                            if(distanceKm <= NEARBY_DISTANCE_THRESHOLD){
+                                nearbySellerList.add(seller);
+                            }
                           }
-                          nearbySellerList.add(seller);
+                          allActiveSellers.add(seller);
                         }
 
-                        if (hasCurrentUserLocation) {
+                        if (hasCurrentUserLocation && !nearbySellerList.isEmpty()) {
+                            binding.tvNearbySeller.setText("Nearby Sellers");
                           Collections.sort(
                               nearbySellerList,
                               (a, b) -> Double.compare(a.getDistanceKm(), b.getDistanceKm()));
+                        }else {
+                            binding.tvNearbySeller.setText("Sellers");
+                            nearbySellerList.clear();
+                            nearbySellerList.addAll(allActiveSellers);
                         }
 
                         if (nearbySellerList.size() > 10) {
