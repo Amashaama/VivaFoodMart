@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "284892242544",
+    "project_id": "foodmart-61a88",
+    "storage_bucket": "foodmart-61a88.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:284892242544:android:2fec4989a8f2f511ad8ab5",
+        "android_client_info": {
+          "package_name": "lk.sa.foodmart"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB8xyR7FxxSkqT2FtZvh8DxMs55-uHx8JM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
