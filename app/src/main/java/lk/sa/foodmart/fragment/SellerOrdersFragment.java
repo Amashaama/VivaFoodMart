@@ -51,12 +51,14 @@ public class SellerOrdersFragment extends Fragment {
   }
 
   private void setupRecyclerView() {
+      if (binding == null) return;
     binding.rvSellerOrders.setLayoutManager(new LinearLayoutManager(requireContext()));
     adapter = new SellerOrdersAdapter(sellerOrders);
     binding.rvSellerOrders.setAdapter(adapter);
   }
 
   private void setupClicks() {
+      if (binding == null) return;
     binding.btnBack.setOnClickListener(
         v -> {
             if (requireActivity() instanceof MainActivity) {
@@ -67,6 +69,7 @@ public class SellerOrdersFragment extends Fragment {
   }
 
   private void loadSellerOrders() {
+    if (binding == null) return;
     if (auth.getCurrentUser() == null) {
       showEmptyState();
       return;
@@ -82,6 +85,7 @@ public class SellerOrdersFragment extends Fragment {
         .get()
         .addOnSuccessListener(
             queryDocumentSnapshots -> {
+              if (binding == null) return;
               sellerOrders.clear();
 
               final int totalOrders = queryDocumentSnapshots.size();
@@ -106,6 +110,7 @@ public class SellerOrdersFragment extends Fragment {
                     .get()
                     .addOnSuccessListener(
                         itemSnapShots -> {
+                          if (binding == null) return;
                           int sellerItemCount = 0;
 
                           for (QueryDocumentSnapshot itemDoc : itemSnapShots) {
@@ -139,6 +144,7 @@ public class SellerOrdersFragment extends Fragment {
                         })
                     .addOnFailureListener(
                         e -> {
+                          if (binding == null) return;
                           checkedOrders[0]++;
                           if (checkedOrders[0] == totalOrders) {
                             finishLoading();
@@ -148,14 +154,18 @@ public class SellerOrdersFragment extends Fragment {
             })
         .addOnFailureListener(
             e -> {
+              if (binding == null) return;
               binding.progressLoading.setVisibility(View.GONE);
 
-              Toast.makeText(requireContext(), "Failed to load seller orders", Toast.LENGTH_SHORT)
-                  .show();
+              if (getContext() != null) {
+                  Toast.makeText(requireContext(), "Failed to load seller orders", Toast.LENGTH_SHORT)
+                      .show();
+              }
             });
   }
 
   private void finishLoading() {
+      if (binding == null) return;
     Collections.sort(sellerOrders, (a, b) -> Long.compare(b.getCreatedAt(), a.getCreatedAt()));
 
     adapter.notifyDataSetChanged();
@@ -171,6 +181,7 @@ public class SellerOrdersFragment extends Fragment {
   }
 
   private void showEmptyState() {
+      if (binding == null) return;
     binding.layoutEmpty.setVisibility(View.VISIBLE);
     binding.rvSellerOrders.setVisibility(View.GONE);
   }

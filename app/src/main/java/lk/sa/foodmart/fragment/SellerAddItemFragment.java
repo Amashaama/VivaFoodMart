@@ -107,11 +107,11 @@ public class SellerAddItemFragment extends Fragment {
   }
 
     private void setupErrorClearListeners() {
-        addTextWatcher(binding.etItemName,()->binding.tilItemName.setError(null));
-        addTextWatcher(binding.etDescription,()->binding.tilDescription.setError(null));
-        addTextWatcher(binding.etBasePrice,()->binding.tilBasePrice.setError(null));
-        addTextWatcher(binding.etQuantity,()->binding.tilQuantity.setError(null));
-        addTextWatcher(binding.actCategory,()->binding.tilCategory.setError(null));
+        addTextWatcher(binding.etItemName,()-> { if (binding != null) binding.tilItemName.setError(null); });
+        addTextWatcher(binding.etDescription,()-> { if (binding != null) binding.tilDescription.setError(null); });
+        addTextWatcher(binding.etBasePrice,()-> { if (binding != null) binding.tilBasePrice.setError(null); });
+        addTextWatcher(binding.etQuantity,()-> { if (binding != null) binding.tilQuantity.setError(null); });
+        addTextWatcher(binding.actCategory,()-> { if (binding != null) binding.tilCategory.setError(null); });
 
     }
 
@@ -155,6 +155,7 @@ public class SellerAddItemFragment extends Fragment {
             new ActivityResultContracts.GetMultipleContents(),
             uris -> {
               isImagePickerOpen = false;
+              if (binding == null) return;
               if (uris != null && !uris.isEmpty()) {
                 int availableSlots = 3 - selectedImageUris.size();
 
@@ -180,7 +181,7 @@ public class SellerAddItemFragment extends Fragment {
   }
 
   private void setupRecyclerView() {
-
+    if (binding == null) return;
     binding.rvPhotos.setLayoutManager(
         new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
     selectedPhotoAdapter =
@@ -197,6 +198,7 @@ public class SellerAddItemFragment extends Fragment {
   }
 
   private void updatePhotoUI() {
+    if (binding == null) return;
     binding.tvPhotoCount.setText(selectedImageUris.size() + " /3 Images");
     if (!selectedImageUris.isEmpty()) {
       binding.ivMainPhoto.setVisibility(View.VISIBLE);
@@ -225,6 +227,7 @@ public class SellerAddItemFragment extends Fragment {
               .document(sellerId)
               .get()
               .addOnSuccessListener(documentSnapshot -> {
+                  if (binding == null) return;
                   sellerAddress = documentSnapshot.getString("address") != null
                           ? documentSnapshot.getString("address") : "";
 
@@ -242,7 +245,9 @@ public class SellerAddItemFragment extends Fragment {
 
               })
               .addOnFailureListener(e->{
-                 Toast.makeText(getContext(),"Failed to load seller location",Toast.LENGTH_SHORT).show();
+                 if (getContext() != null) {
+                     Toast.makeText(getContext(),"Failed to load seller location",Toast.LENGTH_SHORT).show();
+                 }
               });
   }
 
@@ -255,6 +260,7 @@ public class SellerAddItemFragment extends Fragment {
                 .whereEqualTo("active",true)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (binding == null) return;
                     for(QueryDocumentSnapshot document : queryDocumentSnapshots){
                         String id = document.getId();
                         String name= document.getString("name");
@@ -265,26 +271,30 @@ public class SellerAddItemFragment extends Fragment {
                         }
                     }
 
-                    ArrayAdapter<String> categoryAdapter = new ArrayAdapter<>(
-                            getContext(),
-                            android.R.layout.simple_dropdown_item_1line,
-                            categoryNames
-                    );
+                    if (getContext() != null) {
+                        ArrayAdapter<String> categoryAdapter = new ArrayAdapter<>(
+                                getContext(),
+                                android.R.layout.simple_dropdown_item_1line,
+                                categoryNames
+                        );
 
-                    binding.actCategory.setAdapter(categoryAdapter);
-                    binding.actCategory.setOnItemClickListener(((parent,view,position,id) -> {
-                        selectedCategoryId=categoryIds.get(position);
-                        binding.actCategory.setText(categoryNames.get(position),false);
-                        binding.tilCategory.setError(null);
-                    }));
+                        binding.actCategory.setAdapter(categoryAdapter);
+                        binding.actCategory.setOnItemClickListener(((parent,view,position,id) -> {
+                            selectedCategoryId=categoryIds.get(position);
+                            binding.actCategory.setText(categoryNames.get(position),false);
+                            binding.tilCategory.setError(null);
+                        }));
+                    }
 
                 }).addOnFailureListener(e -> {
-                    Toast.makeText(requireContext(), "Failed to load categories", Toast.LENGTH_SHORT).show();
+                    if (getContext() != null) {
+                        Toast.makeText(requireContext(), "Failed to load categories", Toast.LENGTH_SHORT).show();
+                    }
                 });
   }
 
   private void validateAndSaveItem(){
-
+      if (binding == null) return;
         clearErrors();
 
       String itemName = binding.etItemName.getText().toString().trim();
@@ -320,9 +330,16 @@ public class SellerAddItemFragment extends Fragment {
           valid = false;
       }
 
-      if(Double.parseDouble(basePriceStr) <=0 ){
-          binding.tilBasePrice.setError("Invalid Price.");
-          valid = false;
+      if (!basePriceStr.isEmpty()) {
+          try {
+              if(Double.parseDouble(basePriceStr) <=0 ){
+                  binding.tilBasePrice.setError("Invalid Price.");
+                  valid = false;
+              }
+          } catch (NumberFormatException e) {
+              binding.tilBasePrice.setError("Invalid Price.");
+              valid = false;
+          }
       }
 
       if(quantityStr.isEmpty()){
@@ -335,7 +352,7 @@ public class SellerAddItemFragment extends Fragment {
           valid = false;
       }
 
-      if(selectedImageUris.isEmpty()){
+      if(selectedImageUris.isEmpty() && !isEditMode){
           Toast.makeText(requireContext(), "Please select at least one image", Toast.LENGTH_SHORT).show();
           valid = false;
       }
@@ -363,7 +380,10 @@ public class SellerAddItemFragment extends Fragment {
     private void saveItem(String itemName, String description, String categoryName, double itemPrice, int quantity, String portionSize, boolean available) {
 
         if(auth.getCurrentUser() == null){
-            Toast.makeText(getContext(),"User not logged in",Toast.LENGTH_SHORT).show();
+            if (getContext() != null) {
+                Toast.makeText(getContext(),"User not logged in",Toast.LENGTH_SHORT).show();
+            }
+            return;
         }
 
         String sellerId = auth.getCurrentUser().getUid();
@@ -381,19 +401,23 @@ public class SellerAddItemFragment extends Fragment {
 
         }
 
-        uploadImagesAndSaveData(
-                itemRef,
-                itemId,
-                sellerId,
-                sellerName,
-                itemName,
-                description,
-                categoryName,
-                itemPrice,
-                quantity,
-                portionSize,
-                available
-        );
+        if (selectedImageUris.isEmpty()) {
+            saveItemDataToFirestore(itemRef, itemId, sellerId, itemName, description, categoryName, itemPrice, quantity, portionSize, available, null);
+        } else {
+            uploadImagesAndSaveData(
+                    itemRef,
+                    itemId,
+                    sellerId,
+                    sellerName,
+                    itemName,
+                    description,
+                    categoryName,
+                    itemPrice,
+                    quantity,
+                    portionSize,
+                    available
+            );
+        }
 
     }
 
@@ -458,7 +482,9 @@ public class SellerAddItemFragment extends Fragment {
         itemMap.put("quantity",quantity);
         itemMap.put("portionSize",portionSize);
         itemMap.put("available",available);
-        itemMap.put("imageUris",imageUris);
+        if (imageUris != null) {
+            itemMap.put("imageUris",imageUris);
+        }
 
         itemMap.put("sellerAddress",sellerAddress);
         itemMap.put("sellerCity",sellerCity);
@@ -469,18 +495,23 @@ public class SellerAddItemFragment extends Fragment {
 
         itemRef.set(itemMap)
                 .addOnSuccessListener(unused -> {
-                    Toast.makeText(requireContext(), "Item saved successfully", Toast.LENGTH_SHORT).show();
-                    clearForm();
-                   if(requireActivity() instanceof MainActivity){
-                       ((MainActivity) requireActivity()).navigateToFragment(new SellerMyShopFragment(),R.id.bottom_nav_my_shop,R.id.side_nav_seller_my_shop,false);
-                   }
+                    if (getContext() != null) {
+                        Toast.makeText(requireContext(), "Item saved successfully", Toast.LENGTH_SHORT).show();
+                        if (binding != null) clearForm();
+                        if(requireActivity() instanceof MainActivity){
+                            ((MainActivity) requireActivity()).navigateToFragment(new SellerMyShopFragment(),R.id.bottom_nav_my_shop,R.id.side_nav_seller_my_shop,false);
+                        }
+                    }
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(requireContext(), "Failed to save item: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    if (getContext() != null) {
+                        Toast.makeText(requireContext(), "Failed to save item: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    }
                 });
     }
 
     private void clearForm() {
+        if (binding == null) return;
         binding.etItemName.setText("");
         binding.etDescription.setText("");
         binding.actCategory.setText("");
@@ -497,6 +528,7 @@ public class SellerAddItemFragment extends Fragment {
     }
 
     private void clearErrors() {
+        if (binding == null) return;
         binding.tilItemName.setError(null);
         binding.tilDescription.setError(null);
         binding.tilCategory.setError(null);
@@ -505,6 +537,7 @@ public class SellerAddItemFragment extends Fragment {
     }
 
     private String getSelectedPortionSize() {
+        if (binding == null) return "";
         int selectedId = binding.rgPortionSize.getCheckedRadioButtonId();
 
         if(selectedId == binding.rbRegular.getId()){
@@ -531,6 +564,7 @@ public class SellerAddItemFragment extends Fragment {
                 .document(editingItemId)
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
+                    if (binding == null) return;
                     if(documentSnapshot.exists()){
                         String itemName = documentSnapshot.getString("itemName");
                         String description = documentSnapshot.getString("itemDescription");
@@ -570,23 +604,32 @@ public class SellerAddItemFragment extends Fragment {
 
                         List<String> existingImageUris = (List<String>) documentSnapshot.get("imageUris");
                         if(existingImageUris != null && !existingImageUris.isEmpty()){
-                            Glide.with(requireActivity())
-                                    .load(existingImageUris.get(0))
-                                    .into(binding.ivMainPhoto);
+                            if (getActivity() != null) {
+                                Glide.with(requireActivity())
+                                        .load(existingImageUris.get(0))
+                                        .into(binding.ivMainPhoto);
 
-                            binding.ivMainPhoto.setVisibility(View.VISIBLE);
-                            binding.layoutUploadPlaceholder.setVisibility(View.GONE);
-                            binding.ivPhotoAddImage.setVisibility(View.VISIBLE);
-                            binding.tvPhotoCount.setText(existingImageUris.size()+" /3 Images");
-
+                                binding.ivMainPhoto.setVisibility(View.VISIBLE);
+                                binding.layoutUploadPlaceholder.setVisibility(View.GONE);
+                                binding.ivPhotoAddImage.setVisibility(View.VISIBLE);
+                                binding.tvPhotoCount.setText(existingImageUris.size()+" /3 Images");
+                            }
                         }
 
 
                     }
-                }).addOnFailureListener(e ->
-                        Toast.makeText(requireContext(), "Failed to load item for edit", Toast.LENGTH_SHORT).show()
-                );
+                }).addOnFailureListener(e -> {
+                        if (getContext() != null) {
+                            Toast.makeText(requireContext(), "Failed to load item for edit", Toast.LENGTH_SHORT).show();
+                        }
+                });
 
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
     }
 
 

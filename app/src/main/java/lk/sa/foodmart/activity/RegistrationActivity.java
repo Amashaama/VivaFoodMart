@@ -22,6 +22,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -208,6 +209,10 @@ public class RegistrationActivity extends AppCompatActivity {
                                                        @Override
                                                        public void onSuccess(Void unused) {
                                                            Toast.makeText(getApplicationContext(), "Account Registration Success !", Toast.LENGTH_SHORT).show();
+                                                           
+                                                           // sign out to  make new user log in
+                                                           firebaseAuth.signOut();
+
                                                            Intent intent = new Intent(RegistrationActivity.this, LoginActivity.class);
                                                            startActivity(intent);
                                                            finish();

@@ -106,6 +106,9 @@ public class MainActivity extends AppCompatActivity
               public void handleOnBackPressed() {
                 if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
                   drawerLayout.closeDrawer(GravityCompat.START);
+                } else if (bottomNavigationView.getSelectedItemId() != R.id.bottom_nav_home) {
+                    navigateToFragment(new HomeFragment(), R.id.bottom_nav_home, R.id.side_nav_home, false);
+                    bottomNavigationView.setSelectedItemId(R.id.bottom_nav_home);
                 } else {
                   finish();
                 }
@@ -168,10 +171,14 @@ public class MainActivity extends AppCompatActivity
               .collection("items")
               .get()
               .addOnSuccessListener(queryDocumentSnapshots -> {
+                  if (firebaseAuth.getCurrentUser() == null) {
+                      binding.toolBarBtnCart.setVisibility(View.GONE);
+                      binding.toolBarTvCartBadge.setVisibility(View.GONE);
+                      return;
+                  }
                   int count = queryDocumentSnapshots.size();
 
-
-                      binding.toolBarBtnCart.setVisibility(View.VISIBLE);
+                  binding.toolBarBtnCart.setVisibility(View.VISIBLE);
                   if (count > 0) {
                       binding.toolBarTvCartBadge.setVisibility(View.VISIBLE);
                       binding.toolBarTvCartBadge.setText(String.valueOf(count));
@@ -226,11 +233,10 @@ public class MainActivity extends AppCompatActivity
       sideNavHeaderBinding.sideNavHeaderProfilePic.setImageResource(R.drawable.baseline_person_outline_24);
       sideNavHeaderBinding.sideNavHeaderProfilePic.setBackground(null);
 
-
-
       sideNavHeaderBinding.userVerifiedBadge.setVisibility(View.GONE);
 
       binding.toolBarBtnCart.setVisibility(View.GONE);
+      binding.toolBarTvCartBadge.setVisibility(View.GONE);
     }
   }
 
@@ -263,6 +269,7 @@ public class MainActivity extends AppCompatActivity
     } else if (itemId == R.id.side_nav_logout) {
       firebaseAuth.signOut();
       loadProfileDetailsOnSideNav();
+      countCartItems();
         navigateToFragment(new HomeFragment(), R.id.bottom_nav_home, R.id.side_nav_home, false);
       isProgrammaticSelection = true;
       bottomNavigationView.setSelectedItemId(R.id.bottom_nav_home);
@@ -291,13 +298,6 @@ public class MainActivity extends AppCompatActivity
     bottomNavigationView.setSelectedItemId(R.id.bottom_nav_search);
     isProgrammaticSelection = false;
   }
-
-
-
-
-
-
-
 
   public void navigateToFragment(Fragment fragment,int bottomNavItemId, int sideNavItemId,boolean addToBackStack){
       FragmentTransaction transaction = getSupportFragmentManager()

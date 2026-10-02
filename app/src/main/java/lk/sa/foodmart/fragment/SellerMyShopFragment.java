@@ -105,6 +105,8 @@ public class SellerMyShopFragment extends Fragment {
     }
 
     private void loadMyItems() {
+        if (binding == null) return;
+
         if(auth.getCurrentUser() == null){
             showEmptyState();
             return;
@@ -118,6 +120,7 @@ public class SellerMyShopFragment extends Fragment {
                 .whereEqualTo("sellerId",sellerId)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (binding == null) return;
                     myItems.clear();
 
                     for(QueryDocumentSnapshot document: queryDocumentSnapshots){
@@ -139,13 +142,17 @@ public class SellerMyShopFragment extends Fragment {
                     }
                 })
                 .addOnFailureListener(e -> {
+                    if (binding == null) return;
                     binding.progressLoading.setVisibility(View.GONE);
 
-                    Toast.makeText(requireContext(), "Failed to load shop items", Toast.LENGTH_SHORT).show();
+                    if (getContext() != null) {
+                        Toast.makeText(requireContext(), "Failed to load shop items", Toast.LENGTH_SHORT).show();
+                    }
                 });
     }
 
     private void showEmptyState(){
+        if (binding == null) return;
         binding.layoutEmpty.setVisibility(View.VISIBLE);
         binding.rvMyItems.setVisibility(View.GONE);
     }

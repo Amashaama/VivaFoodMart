@@ -53,8 +53,8 @@ public class CartFragment extends Fragment {
 
   private void setupRecyclerView() {
     binding.rvCart.setLayoutManager(new LinearLayoutManager(requireContext()));
-    binding.rvCart.setNestedScrollingEnabled(false);
-
+    // Removed setNestedScrollingEnabled(false) to allow proper scrolling in the new ConstraintLayout
+    
     adapter =
         new CartAdapter(
             cartItems,
@@ -136,6 +136,7 @@ public class CartFragment extends Fragment {
         .get()
         .addOnSuccessListener(
             queryDocumentSnapshots -> {
+              if (binding == null) return;
               cartItems.clear();
 
               for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
@@ -148,7 +149,9 @@ public class CartFragment extends Fragment {
             })
         .addOnFailureListener(
             e -> {
-              Toast.makeText(requireContext(), "Failed to load cart", Toast.LENGTH_SHORT).show();
+              if (getContext() != null) {
+                Toast.makeText(requireContext(), "Failed to load cart", Toast.LENGTH_SHORT).show();
+              }
             });
   }
 
@@ -166,8 +169,10 @@ public class CartFragment extends Fragment {
         .addOnSuccessListener(unused -> loadCartItems())
         .addOnFailureListener(
             e -> {
-              Toast.makeText(requireContext(), "Failed to update quantity", Toast.LENGTH_SHORT)
-                  .show();
+              if (getContext() != null) {
+                Toast.makeText(requireContext(), "Failed to update quantity", Toast.LENGTH_SHORT)
+                    .show();
+              }
             });
   }
 
@@ -193,7 +198,9 @@ public class CartFragment extends Fragment {
             })
         .addOnFailureListener(
             e -> {
-              Toast.makeText(requireContext(), "Failed to remove item", Toast.LENGTH_SHORT).show();
+              if (getContext() != null) {
+                Toast.makeText(requireContext(), "Failed to remove item", Toast.LENGTH_SHORT).show();
+              }
             });
   }
 
@@ -215,36 +222,37 @@ public class CartFragment extends Fragment {
               for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
                 documentSnapshot.getReference().delete();
               }
-              Toast.makeText(requireContext(), "Cart cleared", Toast.LENGTH_SHORT).show();
+              if (getContext() != null) {
+                Toast.makeText(requireContext(), "Cart cleared", Toast.LENGTH_SHORT).show();
+              }
               if (requireActivity() instanceof MainActivity) {
                 ((MainActivity) requireActivity()).countCartItems();
               }
               loadCartItems();
             })
         .addOnFailureListener(
-            e ->
+            e -> {
+              if (getContext() != null) {
                 Toast.makeText(requireContext(), "Failed to clear cart", Toast.LENGTH_SHORT)
-                    .show());
+                    .show();
+              }
+            });
   }
 
   private void updateSummary() {
+    if (binding == null) return;
     double subtotal = 0;
 
     for (CartItem item : cartItems) {
       subtotal += item.getItemPrice() * item.getQuantity();
     }
 
-    double deliveryFee = cartItems.isEmpty() ? 0 : DELIVERY_FEE;
-
-    //        binding.tvSubtotal.setText(String.format(Locale.getDefault(),"LKR %.2f",subtotal));
-    //        binding.tvDeliveryFee.setText(String.format(Locale.getDefault(),"LKR
-    // %.2f",deliveryFee));
     binding.tvTotal.setText(String.format(Locale.getDefault(), "LKR %.2f", subtotal));
     binding.tvTitle.setText("My Cart (" + cartItems.size() + ") ");
   }
 
   private void updateUIState() {
-
+    if (binding == null) return;
     if (cartItems.isEmpty()) {
       showEmptyState();
       binding.btnClearCart.setVisibility(View.GONE);
@@ -263,6 +271,7 @@ public class CartFragment extends Fragment {
         .get()
         .addOnSuccessListener(
             documentSnapshot -> {
+              if (binding == null) return;
               if (documentSnapshot.exists()) {
                 Long stockLong = documentSnapshot.getLong("quantity");
                 int availableStock = stockLong != null ? stockLong.intValue() : 0;
@@ -270,22 +279,30 @@ public class CartFragment extends Fragment {
                 if (cartItem.getQuantity() < availableStock) {
                   updateCartQuantity(cartItem, cartItem.getQuantity() + 1);
                 } else {
-                  Toast.makeText(
-                          requireContext(), "Cannot exceed available stock", Toast.LENGTH_SHORT)
-                      .show();
+                  if (getContext() != null) {
+                    Toast.makeText(
+                            requireContext(), "Cannot exceed available stock", Toast.LENGTH_SHORT)
+                        .show();
+                  }
                 }
               } else {
-                Toast.makeText(requireContext(), "Item no longer available", Toast.LENGTH_SHORT)
-                    .show();
+                if (getContext() != null) {
+                  Toast.makeText(requireContext(), "Item no longer available", Toast.LENGTH_SHORT)
+                      .show();
+                }
               }
             })
         .addOnFailureListener(
-            e ->
+            e -> {
+              if (getContext() != null) {
                 Toast.makeText(requireContext(), "Failed to check stock", Toast.LENGTH_SHORT)
-                    .show());
+                    .show();
+              }
+            });
   }
 
   private void showEmptyState() {
+    if (binding == null) return;
     binding.layoutEmpty.setVisibility(View.VISIBLE);
     binding.rvCart.setVisibility(View.GONE);
     binding.cardSummary.setVisibility(View.GONE);
