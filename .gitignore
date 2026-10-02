@@ -1,3 +1,24 @@
-# Local Android SDK path and developer-specific API keys
-/local.properties
-/secrets.properties
+# Gradle
+.gradle/
+build/
+**/build/
+
+# Android Studio
+.idea/
+*.iml
+
+# Local configuration
+local.properties
+secrets.properties
+
+# Generated files
+.externalNativeBuild/
+.cxx/
+
+# APKs
+*.apk
+*.aab
+
+# OS files
+.DS_Store
+Thumbs.db
